@@ -3,113 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>simple_sorter - Modern Sorting for Eiffel</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #1e40af;
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --code-bg: #1e293b;
-            --code-text: #e2e8f0;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background: var(--bg);
-        }
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-        header h1 { font-size: 3rem; margin-bottom: 1rem; }
-        header p { font-size: 1.25rem; opacity: 0.9; }
-        main { max-width: 900px; margin: 0 auto; padding: 2rem; }
-        section { margin-bottom: 3rem; }
-        h2 { color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; }
-        pre {
-            background: var(--code-bg);
-            color: var(--code-text);
-            padding: 1.5rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 1rem 0;
-        }
-        code { font-family: 'Fira Code', 'Consolas', monospace; }
-        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background: var(--primary); color: white; }
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            margin: 0.25rem;
-        }
-        .badge-blue { background: var(--primary); color: white; }
-        .badge-green { background: #22c55e; color: white; }
-        .badge-yellow { background: #eab308; color: white; }
-        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-        .feature {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .feature h3 { color: var(--primary); margin-bottom: 0.5rem; }
-        a { color: var(--primary); }
-        footer { text-align: center; padding: 2rem; color: #64748b; }
-    </style>
+    <title>simple_sorter - Simple Eiffel Library</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <h1>simple_sorter</h1>
-        <p>Modern, ergonomic sorting for Eiffel collections</p>
-        <div style="margin-top: 1rem;">
-            <span class="badge badge-blue">Simple Eiffel</span>
-            <span class="badge badge-yellow">MIT License</span>
-            <span class="badge badge-green">30 Tests Passing</span>
+        <div class="container">
+            <img src="images/logo.png" alt="simple_sorter" class="logo">
+            <h1>simple_sorter</h1>
+            <p class="tagline">Modern, ergonomic sorting for Eiffel collections</p>
+            <div class="badges">
+                <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+                <img src="https://img.shields.io/badge/Eiffel-25.02-purple.svg" alt="Eiffel 25.02">
+                <img src="https://img.shields.io/badge/DBC-Contracts-green.svg" alt="Design by Contract">
+            </div>
         </div>
     </header>
 
-    <main>
-        <section>
-            <h2>Features</h2>
-            <div class="features">
-                <div class="feature">
-                    <h3>Agent-Based Comparison</h3>
-                    <p>No comparator classes needed. Just pass an agent.</p>
-                </div>
-                <div class="feature">
-                    <h3>Multiple Algorithms</h3>
-                    <p>Introsort, merge sort, heap sort, insertion sort.</p>
-                </div>
-                <div class="feature">
-                    <h3>Stable Sorting</h3>
-                    <p>Preserve order of equal elements when needed.</p>
-                </div>
-                <div class="feature">
-                    <h3>Full DBC</h3>
-                    <p>Design by Contract throughout - 37 contract clauses.</p>
-                </div>
-                <div class="feature">
-                    <h3>SCOOP Compatible</h3>
-                    <p>Ready for concurrent Eiffel applications.</p>
-                </div>
-                <div class="feature">
-                    <h3>Void-Safe</h3>
-                    <p>100% void safety with void_safety="all".</p>
-                </div>
-            </div>
-        </section>
+    <nav>
+        <div class="container">
+            <a href="#overview">Overview</a>
+            <a href="#quick-start">Quick Start</a>
+            <a href="#features">Features</a>
+            <a href="#api-reference">API Reference</a>
+            <a href="#algorithms">Algorithms</a>
+            <a href="https://github.com/simple-eiffel/simple_sorter">GitHub</a>
+        </div>
+    </nav>
 
-        <section>
-            <h2>Quick Start</h2>
-            <pre><code>local
+    <main>
+        <div class="container">
+            <section id="overview">
+                <h2>Overview</h2>
+                <p>simple_sorter provides a modern, ergonomic sorting API for Eiffel collections. Unlike traditional approaches requiring comparator classes, simple_sorter uses agent-based comparison for a cleaner, more expressive syntax.</p>
+                <p>The library offers multiple algorithm choices (introsort, merge sort, heap sort, insertion sort) with full Design by Contract throughout. All algorithms are thoroughly tested with both standard and adversarial test cases.</p>
+            </section>
+
+            <section id="quick-start">
+                <h2>Quick Start</h2>
+                <pre><code class="language-eiffel">local
     sorter: SIMPLE_SORTER [PERSON]
     people: ARRAYED_LIST [PERSON]
 do
@@ -124,67 +56,155 @@ do
     -- Stable sort preserves order of equal elements
     sorter.sort_by_stable (people, agent {PERSON}.department)
 end</code></pre>
-        </section>
+            </section>
 
-        <section>
-            <h2>Algorithms</h2>
-            <table>
-                <tr>
-                    <th>Algorithm</th>
-                    <th>Time</th>
-                    <th>Space</th>
-                    <th>Stable</th>
-                    <th>Best For</th>
-                </tr>
-                <tr>
-                    <td>Introsort</td>
-                    <td>O(n log n)</td>
-                    <td>O(log n)</td>
-                    <td>No</td>
-                    <td>General purpose (default)</td>
-                </tr>
-                <tr>
-                    <td>Merge Sort</td>
-                    <td>O(n log n)</td>
-                    <td>O(n)</td>
-                    <td>Yes</td>
-                    <td>When stability needed</td>
-                </tr>
-                <tr>
-                    <td>Heap Sort</td>
-                    <td>O(n log n)</td>
-                    <td>O(1)</td>
-                    <td>No</td>
-                    <td>Memory constrained</td>
-                </tr>
-                <tr>
-                    <td>Insertion Sort</td>
-                    <td>O(n²)</td>
-                    <td>O(1)</td>
-                    <td>Yes</td>
-                    <td>Small or nearly sorted</td>
-                </tr>
-            </table>
-        </section>
+            <section id="features">
+                <h2>Features</h2>
+                <ul>
+                    <li>Agent-based comparison - no comparator classes needed</li>
+                    <li>Multiple algorithms - introsort, merge sort, heap sort, insertion sort</li>
+                    <li>Stable sorting - preserve order of equal elements</li>
+                    <li>Design by Contract throughout (37 contract clauses)</li>
+                    <li>Void-safe implementation</li>
+                    <li>SCOOP-compatible</li>
+                </ul>
+            </section>
 
-        <section>
-            <h2>Installation</h2>
-            <pre><code>&lt;library name="simple_sorter" location="path/to/simple_sorter.ecf"/&gt;</code></pre>
-        </section>
+            <section id="api-reference">
+                <h2>API Reference</h2>
 
-        <section>
-            <h2>Links</h2>
-            <p>
-                <a href="https://github.com/simple-eiffel/simple_sorter">GitHub Repository</a> |
-                <a href="https://github.com/simple-eiffel">Simple Eiffel Organization</a> |
-                <a href="https://simple-eiffel.github.io">Documentation</a>
-            </p>
-        </section>
+                <h3>SIMPLE_SORTER [G]</h3>
+                <p>Main facade class for all sorting operations.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>make</code></td>
+                            <td>Create sorter with default algorithm (introsort)</td>
+                        </tr>
+                        <tr>
+                            <td><code>make_with_algorithm</code></td>
+                            <td>Create sorter with specific algorithm</td>
+                        </tr>
+                        <tr>
+                            <td><code>sort_by</code></td>
+                            <td>Sort list ascending by key function</td>
+                        </tr>
+                        <tr>
+                            <td><code>sort_by_descending</code></td>
+                            <td>Sort list descending by key function</td>
+                        </tr>
+                        <tr>
+                            <td><code>sort_by_stable</code></td>
+                            <td>Stable sort preserving order of equal elements</td>
+                        </tr>
+                        <tr>
+                            <td><code>sort_array_by</code></td>
+                            <td>Sort array directly by key function</td>
+                        </tr>
+                        <tr>
+                            <td><code>is_sorted</code></td>
+                            <td>Query if list is sorted ascending</td>
+                        </tr>
+                        <tr>
+                            <td><code>is_sorted_descending</code></td>
+                            <td>Query if list is sorted descending</td>
+                        </tr>
+                        <tr>
+                            <td><code>set_algorithm</code></td>
+                            <td>Change sorting algorithm</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>SIMPLE_SORT_ALGORITHM [G]</h3>
+                <p>Deferred base class for sorting algorithms.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>Algorithm name (e.g., "introsort")</td>
+                        </tr>
+                        <tr>
+                            <td><code>is_stable</code></td>
+                            <td>True if algorithm preserves order of equal elements</td>
+                        </tr>
+                        <tr>
+                            <td><code>sort</code></td>
+                            <td>Sort array with key function and direction</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="algorithms">
+                <h2>Algorithms</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Time</th>
+                            <th>Space</th>
+                            <th>Stable</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Introsort</td>
+                            <td>O(n log n)</td>
+                            <td>O(log n)</td>
+                            <td>No</td>
+                            <td>General purpose (default)</td>
+                        </tr>
+                        <tr>
+                            <td>Merge Sort</td>
+                            <td>O(n log n)</td>
+                            <td>O(n)</td>
+                            <td>Yes</td>
+                            <td>When stability needed</td>
+                        </tr>
+                        <tr>
+                            <td>Heap Sort</td>
+                            <td>O(n log n)</td>
+                            <td>O(1)</td>
+                            <td>No</td>
+                            <td>Memory constrained</td>
+                        </tr>
+                        <tr>
+                            <td>Insertion Sort</td>
+                            <td>O(n&sup2;)</td>
+                            <td>O(1)</td>
+                            <td>Yes</td>
+                            <td>Small or nearly sorted</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="installation">
+                <h2>Installation</h2>
+                <p>Add to your ECF file:</p>
+                <pre><code class="language-xml">&lt;library name="simple_sorter" location="$SIMPLE_LIBS/simple_sorter/simple_sorter.ecf"/&gt;</code></pre>
+            </section>
+        </div>
     </main>
 
     <footer>
-        <p>Part of the <a href="https://github.com/simple-eiffel">Simple Eiffel</a> ecosystem.</p>
-        <p>MIT License &copy; 2026</p>
+        <div class="container">
+            <p>&copy; 2026 Simple Eiffel. <a href="https://github.com/simple-eiffel">GitHub</a></p>
+        </div>
     </footer>
 </body>
 </html>
