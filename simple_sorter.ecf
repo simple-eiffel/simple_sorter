@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-23-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-23-0 http://www.eiffel.com/developers/xml/configuration-1-23-0.xsd" name="simple_sorter" uuid="A3E7F8C1-5D2B-4A9E-B6C3-8F1E2D4A7B9C" library_target="simple_sorter">
+	<description>Modern, ergonomic sorting library for Eiffel collections with agent-based comparison</description>
+	<target name="simple_sorter">
+		<root all_classes="true"/>
+		<version major="1" minor="0" release="0" build="1" company="Simple Eiffel" product="simple_sorter" copyright="2026 Larry Rix"/>
+		<option warning="warning" void_safety="all">
+			<assertions precondition="true" postcondition="true" check="true" invariant="true" loop="true" supplier_precondition="true"/>
+		</option>
+		<setting name="console_application" value="true"/>
+		<capability>
+			<concurrency support="scoop" use="scoop"/>
+			<void_safety support="all" use="all"/>
+		</capability>
+		<library name="base" location="$ISE_LIBRARY\library\base\base.ecf"/>
+		<cluster name="src" location=".\src\" recursive="true"/>
+	</target>
+	<target name="simple_sorter_tests" extends="simple_sorter">
+		<root class="APPLICATION" feature="make"/>
+		<library name="testing" location="$ISE_LIBRARY\library\testing\testing.ecf"/>
+		<cluster name="test" location=".\test\" recursive="true"/>
+	</target>
+</system>
