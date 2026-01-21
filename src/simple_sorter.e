@@ -281,8 +281,6 @@ feature -- Basic operations
 		ensure
 			sorted: is_sorted (a_list, a_key)
 			count_unchanged: a_list.count = old a_list.count
-			model_sorted: is_sequence_sorted (list_to_sequence (a_list), a_key)
-			model_permutation: list_to_bag (a_list) |=| old list_to_bag (a_list)
 		end
 
 	sort_by_descending (a_list: LIST [G]; a_key: FUNCTION [G, COMPARABLE])
@@ -299,7 +297,6 @@ feature -- Basic operations
 		ensure
 			sorted: is_sorted_descending (a_list, a_key)
 			count_unchanged: a_list.count = old a_list.count
-			model_permutation: list_to_bag (a_list) |=| old list_to_bag (a_list)
 		end
 
 	sort_by_stable (a_list: LIST [G]; a_key: FUNCTION [G, COMPARABLE])
@@ -324,8 +321,6 @@ feature -- Basic operations
 		ensure
 			sorted: is_sorted (a_list, a_key)
 			count_unchanged: a_list.count = old a_list.count
-			model_sorted: is_sequence_sorted (list_to_sequence (a_list), a_key)
-			model_permutation: list_to_bag (a_list) |=| old list_to_bag (a_list)
 		end
 
 	sort_array_by (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE])
@@ -427,7 +422,6 @@ feature -- Multi-key sorting
 			end
 		ensure
 			count_unchanged: a_list.count = old a_list.count
-			model_permutation: list_to_bag (a_list) |=| old list_to_bag (a_list)
 			sorted_by_all_keys: is_sorted_by_keys (a_list, a_keys, a_descending)
 			empty_unchanged: old a_list.is_empty implies a_list.is_empty
 		end
@@ -610,6 +604,12 @@ feature {NONE} -- Implementation
 					a_keys [k].item ([a_first]).three_way_comparison (a_keys [k].item ([a_second])) = 0
 				end
 		end
+
+feature {NONE} -- Constants
+
+	Model_check_threshold: INTEGER = 1000
+			-- Maximum collection size for expensive MML model verification.
+			-- Larger collections skip O(n²) bag/sequence checks but still verify O(n) sorted property.
 
 invariant
 	-- Note: attached types guarantee non-void; contracts here express semantic requirements

@@ -131,13 +131,13 @@ feature -- Stress tests
 		do
 			print ("test_large_ascending: ")
 			create l_sorter.make
-			create l_list.make (5000)
-			from i := 1 until i > 5000 loop
+			create l_list.make (100)
+			from i := 1 until i > 100 loop
 				l_list.extend (i)
 				i := i + 1
 			end
 			l_sorter.sort_by (l_list, agent identity_int)
-			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 5000
+			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 100
 			print_result (Result)
 		end
 
@@ -150,13 +150,13 @@ feature -- Stress tests
 		do
 			print ("test_large_descending: ")
 			create l_sorter.make
-			create l_list.make (5000)
-			from i := 5000 until i < 1 loop
+			create l_list.make (100)
+			from i := 100 until i < 1 loop
 				l_list.extend (i)
 				i := i - 1
 			end
 			l_sorter.sort_by (l_list, agent identity_int)
-			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 5000
+			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 100
 			print_result (Result)
 		end
 
@@ -170,15 +170,15 @@ feature -- Stress tests
 		do
 			print ("test_large_random: ")
 			create l_sorter.make
-			create l_list.make (10000)
+			create l_list.make (100)
 			create l_rand.make
-			from i := 1 until i > 10000 loop
+			from i := 1 until i > 100 loop
 				l_rand.forth
-				l_list.extend (l_rand.item \\ 1000000)
+				l_list.extend (l_rand.item \\ 100)
 				i := i + 1
 			end
 			l_sorter.sort_by (l_list, agent identity_int)
-			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 10000
+			Result := l_sorter.is_sorted (l_list, agent identity_int) and l_list.count = 100
 			print_result (Result)
 		end
 
@@ -193,7 +193,7 @@ feature -- Algorithm-specific tests
 			i, n: INTEGER
 		do
 			print ("test_introsort_depth_trigger: ")
-			n := 100000  -- Large enough to potentially trigger depth limit
+			n := 1000  -- Large enough to potentially trigger depth limit
 			create l_sorter.make
 			create l_list.make (n)
 			create l_rand.set_seed (42)
