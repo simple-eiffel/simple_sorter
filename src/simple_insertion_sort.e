@@ -28,6 +28,7 @@ feature -- Basic operations
 
 	sort (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort `a_array` by `a_key` using insertion sort.
+			-- <Precursor>
 		local
 			i, j: INTEGER
 			l_current: G
@@ -64,6 +65,8 @@ feature -- Basic operations
 				a_array [j + 1] := l_current
 				i := i + 1
 			end
+		ensure then
+			stability_guaranteed: True -- Insertion sort IS stable
 		end
 
 end

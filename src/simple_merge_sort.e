@@ -28,6 +28,7 @@ feature -- Basic operations
 
 	sort (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort `a_array` by `a_key` using merge sort.
+			-- <Precursor>
 		local
 			l_temp: ARRAY [G]
 		do
@@ -36,12 +37,18 @@ feature -- Basic operations
 				create l_temp.make_filled (a_array [a_array.lower], a_array.lower, a_array.upper)
 				merge_sort_range (a_array, l_temp, a_array.lower, a_array.upper, a_key, a_descending)
 			end
+		ensure then
+			stability_guaranteed: True -- Merge sort IS stable
 		end
 
 feature {NONE} -- Implementation
 
 	merge_sort_range (a_array: ARRAY [G]; a_temp: ARRAY [G]; a_left, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort range [a_left, a_right] of `a_array`.
+		require
+			left_valid: a_array.valid_index (a_left)
+			right_valid: a_array.valid_index (a_right)
+			left_before_right: a_left <= a_right
 		local
 			l_mid: INTEGER
 		do
@@ -55,6 +62,11 @@ feature {NONE} -- Implementation
 
 	merge (a_array: ARRAY [G]; a_temp: ARRAY [G]; a_left, a_mid, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Merge two sorted halves.
+		require
+			bounds_valid: a_left <= a_mid and a_mid < a_right
+			left_valid: a_array.valid_index (a_left)
+			mid_valid: a_array.valid_index (a_mid)
+			right_valid: a_array.valid_index (a_right)
 		local
 			i, j, k: INTEGER
 			l_left_key, l_right_key: COMPARABLE

@@ -33,6 +33,7 @@ feature -- Basic operations
 
 	sort (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort `a_array` by `a_key` using introsort.
+			-- <Precursor>
 		local
 			l_max_depth: INTEGER
 			l_n: INTEGER
@@ -42,12 +43,18 @@ feature -- Basic operations
 				l_max_depth := 2 * log2_floor (l_n)
 				introsort_range (a_array, a_array.lower, a_array.upper, l_max_depth, a_key, a_descending)
 			end
+		ensure then
+			stability_not_guaranteed: True -- Introsort is NOT stable (quicksort-based)
 		end
 
 feature {NONE} -- Implementation
 
 	introsort_range (a_array: ARRAY [G]; a_left, a_right, a_depth_limit: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort range [a_left, a_right] with depth limiting.
+		require
+			left_valid: a_array.valid_index (a_left)
+			right_valid: a_array.valid_index (a_right)
+			depth_non_negative: a_depth_limit >= 0
 		local
 			l_size, l_pivot: INTEGER
 		do
@@ -69,6 +76,10 @@ feature {NONE} -- Implementation
 
 	partition (a_array: ARRAY [G]; a_left, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN): INTEGER
 			-- Partition array and return pivot index.
+		require
+			left_valid: a_array.valid_index (a_left)
+			right_valid: a_array.valid_index (a_right)
+			range_valid: a_left < a_right
 		local
 			l_pivot_idx, i, j: INTEGER
 			l_pivot_key, l_current_key: COMPARABLE
@@ -99,6 +110,8 @@ feature {NONE} -- Implementation
 			end
 			swap (a_array, i, a_right)
 			Result := i
+		ensure
+			result_in_range: Result >= a_left and Result <= a_right
 		end
 
 	median_of_three (a_array: ARRAY [G]; a_left, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN): INTEGER
@@ -247,16 +260,24 @@ feature {NONE} -- Implementation
 
 	swap (a_array: ARRAY [G]; a_i, a_j: INTEGER)
 			-- Swap elements at positions `a_i` and `a_j`.
+		require
+			i_valid: a_array.valid_index (a_i)
+			j_valid: a_array.valid_index (a_j)
 		local
 			l_temp: G
 		do
 			l_temp := a_array [a_i]
 			a_array [a_i] := a_array [a_j]
 			a_array [a_j] := l_temp
+		ensure
+			swapped_i: a_array [a_i] = old a_array [a_j]
+			swapped_j: a_array [a_j] = old a_array [a_i]
 		end
 
 	log2_floor (a_n: INTEGER): INTEGER
 			-- Floor of log base 2 of `a_n`.
+		require
+			n_positive: a_n > 0
 		local
 			l_n: INTEGER
 		do
@@ -268,6 +289,8 @@ feature {NONE} -- Implementation
 				l_n := l_n // 2
 				Result := Result + 1
 			end
+		ensure
+			result_non_negative: Result >= 0
 		end
 
 end

@@ -55,6 +55,11 @@ feature -- Test execution
 			-- Algorithm change tests
 			if test_set_algorithm then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
 
+			-- Multi-key sorting tests
+			if test_sort_by_keys_two_keys then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_three_keys then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_mixed_directions then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+
 			print ("%N=== Results: " + l_pass_count.out + " passed, " + l_fail_count.out + " failed ===%N")
 		end
 
@@ -378,6 +383,84 @@ feature -- Algorithm change tests
 			print_result (Result)
 		end
 
+feature -- Multi-key sorting tests
+
+	test_sort_by_keys_two_keys: BOOLEAN
+			-- Test sort_by_keys with two keys (name asc, age desc).
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+		do
+			print ("test_sort_by_keys_two_keys: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["Bob", 30, 85],
+				["Alice", 25, 90],
+				["Alice", 30, 88],
+				["Bob", 25, 92]
+			>>)
+			-- Sort by name ascending, then age descending
+			l_sorter.sort_by_keys (l_list,
+				<<agent name_key, agent age_key>>,
+				<<False, True>>)  -- name asc, age desc
+			-- Expected: Alice 30, Alice 25, Bob 30, Bob 25
+			Result := l_list [1].name.is_equal ("Alice") and l_list [1].age = 30 and
+			          l_list [2].name.is_equal ("Alice") and l_list [2].age = 25 and
+			          l_list [3].name.is_equal ("Bob") and l_list [3].age = 30 and
+			          l_list [4].name.is_equal ("Bob") and l_list [4].age = 25
+			print_result (Result)
+		end
+
+	test_sort_by_keys_three_keys: BOOLEAN
+			-- Test sort_by_keys with three keys.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+		do
+			print ("test_sort_by_keys_three_keys: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["Alice", 25, 90],
+				["Alice", 25, 85],
+				["Alice", 25, 95],
+				["Bob", 25, 90]
+			>>)
+			-- Sort by name asc, age asc, score desc
+			l_sorter.sort_by_keys (l_list,
+				<<agent name_key, agent age_key, agent score_key>>,
+				<<False, False, True>>)
+			-- Expected: Alice 25 95, Alice 25 90, Alice 25 85, Bob 25 90
+			Result := l_list [1].name.is_equal ("Alice") and l_list [1].score = 95 and
+			          l_list [2].name.is_equal ("Alice") and l_list [2].score = 90 and
+			          l_list [3].name.is_equal ("Alice") and l_list [3].score = 85 and
+			          l_list [4].name.is_equal ("Bob")
+			print_result (Result)
+		end
+
+	test_sort_by_keys_mixed_directions: BOOLEAN
+			-- Test sort_by_keys with all descending.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [name: STRING; age: INTEGER; score: INTEGER]]
+		do
+			print ("test_sort_by_keys_mixed_directions: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["Alice", 25, 90],
+				["Bob", 30, 85],
+				["Carol", 20, 95]
+			>>)
+			-- Sort by name descending only
+			l_sorter.sort_by_keys (l_list,
+				<<agent name_key>>,
+				<<True>>)  -- name desc
+			-- Expected: Carol, Bob, Alice
+			Result := l_list [1].name.is_equal ("Carol") and
+			          l_list [2].name.is_equal ("Bob") and
+			          l_list [3].name.is_equal ("Alice")
+			print_result (Result)
+		end
+
 feature {NONE} -- Key extractors
 
 	identity_int (a_int: INTEGER): INTEGER
@@ -396,6 +479,24 @@ feature {NONE} -- Key extractors
 			-- Extract priority from tuple.
 		do
 			Result := a_tuple.priority
+		end
+
+	name_key (a_tuple: TUPLE [name: STRING; age: INTEGER; score: INTEGER]): STRING
+			-- Extract name from tuple.
+		do
+			Result := a_tuple.name
+		end
+
+	age_key (a_tuple: TUPLE [name: STRING; age: INTEGER; score: INTEGER]): INTEGER
+			-- Extract age from tuple.
+		do
+			Result := a_tuple.age
+		end
+
+	score_key (a_tuple: TUPLE [name: STRING; age: INTEGER; score: INTEGER]): INTEGER
+			-- Extract score from tuple.
+		do
+			Result := a_tuple.score
 		end
 
 feature {NONE} -- Output

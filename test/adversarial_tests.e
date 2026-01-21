@@ -35,6 +35,13 @@ feature -- Test execution
 			if test_introsort_depth_trigger then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
 			if test_merge_sort_stability_preserved then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
 
+			-- Multi-key sorting adversarial tests (sort_by_keys)
+			if test_sort_by_keys_empty_list then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_single_element then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_all_equal_primary then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_all_equal_all_keys then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+			if test_sort_by_keys_many_keys then l_pass_count := l_pass_count + 1 else l_fail_count := l_fail_count + 1 end
+
 			print ("%N=== Adversarial Results: " + l_pass_count.out + " passed, " + l_fail_count.out + " failed ===%N")
 		end
 
@@ -229,6 +236,113 @@ feature -- Algorithm-specific tests
 			print_result (Result)
 		end
 
+feature -- Multi-key sorting adversarial tests
+
+	test_sort_by_keys_empty_list: BOOLEAN
+			-- Test sort_by_keys on empty list.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+		do
+			print ("test_sort_by_keys_empty_list: ")
+			create l_sorter.make
+			create l_list.make (0)
+			l_sorter.sort_by_keys (l_list,
+				<<agent field_a, agent field_b>>,
+				<<False, False>>)
+			Result := l_list.is_empty
+			print_result (Result)
+		end
+
+	test_sort_by_keys_single_element: BOOLEAN
+			-- Test sort_by_keys on single-element list.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+		do
+			print ("test_sort_by_keys_single_element: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<["only", 42, 100]>>)
+			l_sorter.sort_by_keys (l_list,
+				<<agent field_a, agent field_b>>,
+				<<False, True>>)
+			Result := l_list.count = 1 and l_list [1].a.is_equal ("only")
+			print_result (Result)
+		end
+
+	test_sort_by_keys_all_equal_primary: BOOLEAN
+			-- Test sort_by_keys where all elements have same primary key.
+			-- Secondary key should determine final order.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+		do
+			print ("test_sort_by_keys_all_equal_primary: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["same", 30, 1],
+				["same", 10, 2],
+				["same", 20, 3],
+				["same", 40, 4]
+			>>)
+			-- Sort by a (all equal), then by b ascending
+			l_sorter.sort_by_keys (l_list,
+				<<agent field_a, agent field_b>>,
+				<<False, False>>)
+			-- Should be sorted by b: 10, 20, 30, 40
+			Result := l_list [1].b = 10 and l_list [2].b = 20 and
+			          l_list [3].b = 30 and l_list [4].b = 40
+			print_result (Result)
+		end
+
+	test_sort_by_keys_all_equal_all_keys: BOOLEAN
+			-- Test sort_by_keys where all elements are equal on all keys.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+		do
+			print ("test_sort_by_keys_all_equal_all_keys: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["same", 42, 100],
+				["same", 42, 100],
+				["same", 42, 100]
+			>>)
+			l_sorter.sort_by_keys (l_list,
+				<<agent field_a, agent field_b, agent field_c>>,
+				<<False, False, False>>)
+			-- Count should be preserved
+			Result := l_list.count = 3 and
+			          l_list [1].a.is_equal ("same") and l_list [1].b = 42
+			print_result (Result)
+		end
+
+	test_sort_by_keys_many_keys: BOOLEAN
+			-- Test sort_by_keys with tie-breaking across three keys.
+		local
+			l_sorter: SIMPLE_SORTER [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+			l_list: ARRAYED_LIST [TUPLE [a: STRING; b: INTEGER; c: INTEGER]]
+		do
+			print ("test_sort_by_keys_many_keys: ")
+			create l_sorter.make
+			create l_list.make_from_array (<<
+				["A", 1, 300],
+				["A", 1, 100],
+				["A", 1, 200],
+				["A", 2, 50],
+				["B", 1, 999]
+			>>)
+			-- Sort by a asc, b asc, c asc
+			l_sorter.sort_by_keys (l_list,
+				<<agent field_a, agent field_b, agent field_c>>,
+				<<False, False, False>>)
+			-- Expected: A/1/100, A/1/200, A/1/300, A/2/50, B/1/999
+			Result := l_list [1].a.is_equal ("A") and l_list [1].b = 1 and l_list [1].c = 100 and
+			          l_list [2].c = 200 and l_list [3].c = 300 and
+			          l_list [4].b = 2 and l_list [5].a.is_equal ("B")
+			print_result (Result)
+		end
+
 feature {NONE} -- Key extractors
 
 	identity_int (a_int: INTEGER): INTEGER
@@ -241,6 +355,24 @@ feature {NONE} -- Key extractors
 			-- Extract priority from tuple.
 		do
 			Result := a_tuple.priority
+		end
+
+	field_a (a_tuple: TUPLE [a: STRING; b: INTEGER; c: INTEGER]): STRING
+			-- Extract field a from tuple.
+		do
+			Result := a_tuple.a
+		end
+
+	field_b (a_tuple: TUPLE [a: STRING; b: INTEGER; c: INTEGER]): INTEGER
+			-- Extract field b from tuple.
+		do
+			Result := a_tuple.b
+		end
+
+	field_c (a_tuple: TUPLE [a: STRING; b: INTEGER; c: INTEGER]): INTEGER
+			-- Extract field c from tuple.
+		do
+			Result := a_tuple.c
 		end
 
 feature {NONE} -- Output

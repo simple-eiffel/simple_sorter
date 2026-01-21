@@ -28,6 +28,7 @@ feature -- Basic operations
 
 	sort (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Sort `a_array` by `a_key` using heap sort.
+			-- <Precursor>
 		local
 			l_size, i: INTEGER
 		do
@@ -53,12 +54,17 @@ feature -- Basic operations
 					i := i - 1
 				end
 			end
+		ensure then
+			stability_not_guaranteed: True -- Heap sort is NOT stable
 		end
 
 feature {NONE} -- Implementation
 
 	heapify (a_array: ARRAY [G]; a_size, a_root: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
 			-- Maintain heap property for subtree rooted at `a_root`.
+		require
+			size_valid: a_size >= 0 and a_size <= a_array.count
+			root_valid: a_root >= 0 and a_root < a_size
 		local
 			l_largest, l_left, l_right: INTEGER
 			l_root_key, l_left_key, l_right_key: COMPARABLE
@@ -102,12 +108,19 @@ feature {NONE} -- Implementation
 
 	swap (a_array: ARRAY [G]; a_i, a_j: INTEGER)
 			-- Swap elements at indices `a_i` and `a_j`.
+		require
+			i_valid: a_array.valid_index (a_i)
+			j_valid: a_array.valid_index (a_j)
 		local
 			l_temp: G
 		do
 			l_temp := a_array [a_i]
 			a_array [a_i] := a_array [a_j]
 			a_array [a_j] := l_temp
+		ensure
+			swapped_i: a_array [a_i] = old a_array [a_j]
+			swapped_j: a_array [a_j] = old a_array [a_i]
+			count_unchanged: a_array.count = old a_array.count
 		end
 
 end
