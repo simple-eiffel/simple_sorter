@@ -20,6 +20,6 @@
 		<root class="TEST_APP" feature="make"/>
 		<library name="testing" location="$ISE_LIBRARY\library\testing\testing.ecf"/>
 				<library name="simple_testing" location="$SIMPLE_EIFFEL\simple_testing\simple_testing.ecf"/>
-		<cluster name="test" location=".\test\" recursive="true"/>
+		<cluster name="test" location=".\testing\" recursive="true"/>
 	</target>
 </system>
