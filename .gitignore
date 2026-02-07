@@ -1,2 +1,5 @@
 EIFGENs/
 *.rc
+*.melted
+*.epr
+*.log
