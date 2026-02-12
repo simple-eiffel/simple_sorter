@@ -5,7 +5,7 @@ note
 	revision: "$Revision$"
 
 class
-	SIMPLE_INTROSORT [G]
+	SIMPLE_INTROSORT [G -> detachable separate ANY]
 
 inherit
 	SIMPLE_SORT_ALGORITHM [G]
@@ -116,6 +116,7 @@ feature {NONE} -- Implementation
 
 	median_of_three (a_array: ARRAY [G]; a_left, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN): INTEGER
 			-- Return index of median of first, middle, last elements.
+			-- Note: median selection is direction-independent.
 		local
 			l_mid: INTEGER
 			l_left_key, l_mid_key, l_right_key: COMPARABLE
@@ -125,66 +126,14 @@ feature {NONE} -- Implementation
 			l_mid_key := a_key.item ([a_array [l_mid]])
 			l_right_key := a_key.item ([a_array [a_right]])
 
-			if a_descending then
-				if (l_left_key <= l_mid_key and l_mid_key <= l_right_key) or
-				   (l_right_key <= l_mid_key and l_mid_key <= l_left_key) then
-					Result := l_mid
-				elseif (l_mid_key <= l_left_key and l_left_key <= l_right_key) or
-				       (l_right_key <= l_left_key and l_left_key <= l_mid_key) then
-					Result := a_left
-				else
-					Result := a_right
-				end
+			if (l_left_key <= l_mid_key and l_mid_key <= l_right_key) or
+			   (l_right_key <= l_mid_key and l_mid_key <= l_left_key) then
+				Result := l_mid
+			elseif (l_mid_key <= l_left_key and l_left_key <= l_right_key) or
+			       (l_right_key <= l_left_key and l_left_key <= l_mid_key) then
+				Result := a_left
 			else
-				if (l_left_key <= l_mid_key and l_mid_key <= l_right_key) or
-				   (l_right_key <= l_mid_key and l_mid_key <= l_left_key) then
-					Result := l_mid
-				elseif (l_mid_key <= l_left_key and l_left_key <= l_right_key) or
-				       (l_right_key <= l_left_key and l_left_key <= l_mid_key) then
-					Result := a_left
-				else
-					Result := a_right
-				end
-			end
-		end
-
-	insertion_sort_range (a_array: ARRAY [G]; a_left, a_right: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
-			-- Insertion sort for small ranges.
-		local
-			i, j: INTEGER
-			l_current: G
-			l_current_key, l_compare_key: COMPARABLE
-			l_should_move: BOOLEAN
-			l_done: BOOLEAN
-		do
-			from
-				i := a_left + 1
-			until
-				i > a_right
-			loop
-				l_current := a_array [i]
-				l_current_key := a_key.item ([l_current])
-				j := i - 1
-				l_done := False
-				from
-				until
-					j < a_left or l_done
-				loop
-					l_compare_key := a_key.item ([a_array [j]])
-					if a_descending then
-						l_should_move := l_compare_key < l_current_key
-					else
-						l_should_move := l_compare_key > l_current_key
-					end
-					if l_should_move then
-						a_array [j + 1] := a_array [j]
-						j := j - 1
-					else
-						l_done := True
-					end
-				end
-				a_array [j + 1] := l_current
-				i := i + 1
+				Result := a_right
 			end
 		end
 
@@ -200,7 +149,7 @@ feature {NONE} -- Implementation
 			until
 				i < 0
 			loop
-				heapify_range (a_array, a_left, l_size, i, a_key, a_descending)
+				heapify (a_array, a_left, l_size, i, a_key, a_descending)
 				i := i - 1
 			end
 			-- Extract elements
@@ -210,68 +159,9 @@ feature {NONE} -- Implementation
 				i < 1
 			loop
 				swap (a_array, a_left, a_left + i)
-				heapify_range (a_array, a_left, i, 0, a_key, a_descending)
+				heapify (a_array, a_left, i, 0, a_key, a_descending)
 				i := i - 1
 			end
-		end
-
-	heapify_range (a_array: ARRAY [G]; a_base, a_size, a_root: INTEGER; a_key: FUNCTION [G, COMPARABLE]; a_descending: BOOLEAN)
-			-- Heapify for ranged heap sort.
-		local
-			l_largest, l_left, l_right: INTEGER
-			l_root_key, l_left_key, l_right_key: COMPARABLE
-			l_compare: BOOLEAN
-		do
-			l_largest := a_root
-			l_left := 2 * a_root + 1
-			l_right := 2 * a_root + 2
-
-			if l_left < a_size then
-				l_root_key := a_key.item ([a_array [a_base + l_largest]])
-				l_left_key := a_key.item ([a_array [a_base + l_left]])
-				if a_descending then
-					l_compare := l_left_key < l_root_key
-				else
-					l_compare := l_left_key > l_root_key
-				end
-				if l_compare then
-					l_largest := l_left
-				end
-			end
-
-			if l_right < a_size then
-				l_root_key := a_key.item ([a_array [a_base + l_largest]])
-				l_right_key := a_key.item ([a_array [a_base + l_right]])
-				if a_descending then
-					l_compare := l_right_key < l_root_key
-				else
-					l_compare := l_right_key > l_root_key
-				end
-				if l_compare then
-					l_largest := l_right
-				end
-			end
-
-			if l_largest /= a_root then
-				swap (a_array, a_base + a_root, a_base + l_largest)
-				heapify_range (a_array, a_base, a_size, l_largest, a_key, a_descending)
-			end
-		end
-
-	swap (a_array: ARRAY [G]; a_i, a_j: INTEGER)
-			-- Swap elements at positions `a_i` and `a_j`.
-		require
-			i_valid: a_array.valid_index (a_i)
-			j_valid: a_array.valid_index (a_j)
-		local
-			l_temp: G
-		do
-			l_temp := a_array [a_i]
-			a_array [a_i] := a_array [a_j]
-			a_array [a_j] := l_temp
-		ensure
-			swapped_i: a_array [a_i] = old a_array [a_j]
-			swapped_j: a_array [a_j] = old a_array [a_i]
 		end
 
 	log2_floor (a_n: INTEGER): INTEGER

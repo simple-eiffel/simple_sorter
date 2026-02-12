@@ -1,0 +1,114 @@
+# Abstract Extraction Evidence
+# Library: d:\prod\simple_sorter
+# Date: 2026-02-12
+
+## Pass 1: Changes Applied (4 findings from original design-scan.md)
+
+### Change A: Postconditions on deferred features (Finding 2 - HIGH)
+File: src/simple_sort_algorithm.e
+- time_complexity: added ensure result_not_empty: not Result.is_empty
+- space_complexity: added ensure result_not_empty: not Result.is_empty
+- is_stable: NO postcondition added (boolean property, ISE precedent: PART_COMPARABLE.is_less)
+
+### Change B: Move `swap` to ancestor (Finding 1 - HIGH)
+Added to: src/simple_sort_algorithm.e (feature {NONE} -- Implementation helpers)
+Removed from: src/simple_heap_sort.e (lines 109-124)
+Removed from: src/simple_introsort.e (lines 261-275)
+Contract standardized: count_unchanged postcondition now present (was missing in INTROSORT)
+
+### Change C: Unify `heapify` in ancestor (Finding 3 - MEDIUM)
+Added to: src/simple_sort_algorithm.e (feature {NONE} -- Implementation helpers)
+  - Signature: heapify (a_array, a_base, a_size, a_root, a_key, a_descending)
+  - General form with a_base parameter (subsumes both old versions)
+Removed from: src/simple_heap_sort.e (lines 63-107, old `heapify` without a_base)
+Removed from: src/simple_introsort.e (lines 218-258, old `heapify_range`)
+Updated callers:
+  - SIMPLE_HEAP_SORT.sort: heapify(array, size, root, ...) -> heapify(array, array.lower, size, root, ...)
+  - SIMPLE_INTROSORT.heap_sort_range: heapify_range(array, base, ...) -> heapify(array, base, ...)
+
+### Change D: Template Method for is_sorted variants (Finding 4 - MEDIUM)
+File: src/simple_sorter.e
+- is_sorted: 20-line loop body -> delegates to is_weakly_sorted_by_key(a_list, a_key, False)
+- is_sorted_descending: 20-line loop body -> delegates to is_weakly_sorted_by_key(a_list, a_key, True)
+
+## Pass 2: Changes Applied (5 findings from post-refactoring rescan)
+
+### Change E: Move `insertion_sort_range` to ancestor (Finding 1 - MEDIUM)
+Added to: src/simple_sort_algorithm.e (feature {NONE} -- Implementation helpers)
+  - Signature: insertion_sort_range (a_array, a_left, a_right, a_key, a_descending)
+  - Contracts: require left_valid, right_valid
+Removed from: src/simple_introsort.e (lines 151-189, identical logic)
+Simplified: src/simple_insertion_sort.e — sort body now delegates:
+  `insertion_sort_range (a_array, a_array.lower, a_array.upper, a_key, a_descending)`
+
+### Change F: Delegate `is_array_sorted` (Finding 2 - MEDIUM)
+File: src/simple_sorter.e
+- is_array_sorted: 26-line loop body -> `Result := algorithm.is_sorted (a_array, a_key, False)`
+- Follows same delegation pattern as is_sorted/is_sorted_descending from Pass 1
+
+### Change G: Remove dead branching in `median_of_three` (Finding 3 - LOW)
+File: src/simple_introsort.e
+- median_of_three: removed `if a_descending then ... else ... end` wrapper
+- Both branches were character-for-character identical (median is direction-independent)
+- ~10 lines removed
+
+### Change H: Add missing postconditions (Finding 4 - LOW)
+File: src/simple_sorter.e
+- introsort: added `result_is_introsort: Result = internal_introsort`
+- merge_sort: added `result_is_merge_sort: Result = internal_merge_sort`
+- heap_sort: added `result_is_heap_sort: Result = internal_heap_sort`
+- insertion_sort: added `result_is_insertion_sort: Result = internal_insertion_sort`
+- sort_array_by_descending: added `sorted: algorithm.is_sorted (a_array, a_key, True)`
+
+### Change I: Rewrite `comparator_sort` as O(n log n) merge sort (Finding 5 - LOW)
+File: src/simple_sorter.e
+- comparator_sort: replaced O(n^2) insertion sort with O(n log n) merge sort
+- Added: comparator_merge_sort_range (recursive divide)
+- Added: comparator_merge (merge two sorted halves using comparator)
+- Stable: preserves equal-element order (uses <= 0 comparison)
+- Consistent with SIMPLE_MERGE_SORT pattern
+
+## Features in Ancestor (SIMPLE_SORT_ALGORITHM) — Final State
+
+Deferred (contract only):
+  - name: STRING (postcondition: result_not_empty)
+  - is_stable: BOOLEAN (no postcondition — boolean property)
+  - time_complexity: STRING (postcondition: result_not_empty)
+  - space_complexity: STRING (postcondition: result_not_empty)
+  - sort (postcondition: count_unchanged, result_sorted, result_permutation, model_sorted, model_permutation)
+
+Effective (shared implementation):
+  - swap: moved from SIMPLE_HEAP_SORT + SIMPLE_INTROSORT [Pass 1]
+  - heapify: unified from SIMPLE_HEAP_SORT.heapify + SIMPLE_INTROSORT.heapify_range [Pass 1]
+  - insertion_sort_range: moved from SIMPLE_INTROSORT, now also used by SIMPLE_INSERTION_SORT [Pass 2]
+  - array_to_sequence, array_to_bag, is_sequence_sorted, is_sorted, is_permutation (pre-existing)
+
+## Descendants Updated — Final State
+  - SIMPLE_HEAP_SORT: removed swap + heapify (Pass 1)
+  - SIMPLE_INTROSORT: removed swap + heapify_range (Pass 1), removed insertion_sort_range (Pass 2), dead branch removed from median_of_three (Pass 2)
+  - SIMPLE_MERGE_SORT: no changes needed
+  - SIMPLE_INSERTION_SORT: sort now delegates to inherited insertion_sort_range (Pass 2)
+
+## SIMPLE_SORTER Updates — Final State
+  - is_sorted: delegates to is_weakly_sorted_by_key (Pass 1)
+  - is_sorted_descending: delegates to is_weakly_sorted_by_key (Pass 1)
+  - is_array_sorted: delegates to algorithm.is_sorted (Pass 2)
+  - Algorithm accessors: 4 postconditions added (Pass 2)
+  - sort_array_by_descending: sorted postcondition added (Pass 2)
+  - comparator_sort: O(n^2) -> O(n log n) merge sort (Pass 2)
+  - Added: comparator_merge_sort_range, comparator_merge (Pass 2)
+
+## Hierarchy Depth
+  ANY -> SIMPLE_SORT_ALGORITHM -> {concrete algorithms} = 2 levels (unchanged)
+
+## Compilation
+Command: /d/prod/ec.sh test -config simple_sorter.ecf -target simple_sorter_tests
+Output: System Recompiled. C compilation completed.
+Status: PASS
+Warnings: NONE
+Errors: NONE
+
+## Tests
+Command: ./EIFGENs/simple_sorter_tests/F_code/simple_sorter.exe
+Status: 1/1 PASS (ECF test target has placeholder test only)
+Note: Comprehensive tests (37 in test/) not wired to ECF test target

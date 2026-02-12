@@ -1,0 +1,53 @@
+# Generification Evidence
+# Library: d:\prod\simple_sorter
+# Date: 2026-02-12
+
+## Target Classes
+All 6 classes in the library generified for SCOOP compatibility.
+
+## Generic Parameters Changed
+
+| Class | Before | After |
+|-------|--------|-------|
+| SIMPLE_SORT_ALGORITHM | [G] | [G -> detachable separate ANY] |
+| SIMPLE_HEAP_SORT | [G] | [G -> detachable separate ANY] |
+| SIMPLE_INTROSORT | [G] | [G -> detachable separate ANY] |
+| SIMPLE_MERGE_SORT | [G] | [G -> detachable separate ANY] |
+| SIMPLE_INSERTION_SORT | [G] | [G -> detachable separate ANY] |
+| SIMPLE_SORTER | [G] | [G -> detachable separate ANY] |
+
+## Constraint Justification
+- MML_SEQUENCE [G -> detachable separate ANY] — used in array_to_sequence, is_sequence_sorted, sort postconditions
+- MML_BAG [G -> detachable separate ANY] — used in array_to_bag, is_permutation, sort postconditions
+- ECF has <concurrency support="scoop"/> — SCOOP requires separate annotations
+- Operations on G: only =/= (reference equality), array storage/retrieval, FUNCTION agent passing — all compatible with detachable separate ANY
+- No constraint escalation needed: no <, >, hash_code, or arithmetic on G directly
+
+## Feature Signature Changes
+NONE — all feature signatures unchanged. Only class header constraints added.
+
+## Attribute Changes
+NONE — no attributes use G directly as a bare type.
+
+## Client Code Updated
+NONE — all client code uses concrete types (INTEGER, STRING, TUPLE [...]) that conform to detachable separate ANY.
+
+## Files Modified
+1. src/simple_sort_algorithm.e: line 8
+2. src/simple_heap_sort.e: line 8
+3. src/simple_introsort.e: line 8
+4. src/simple_merge_sort.e: line 8
+5. src/simple_insertion_sort.e: line 8
+6. src/simple_sorter.e: line 8
+
+## Compilation
+Command: /d/prod/ec.sh test -config simple_sorter.ecf -target simple_sorter_tests
+Output: System Recompiled. C compilation completed.
+Status: PASS
+Warnings: NONE
+Generification errors resolved: NONE
+
+## Tests
+Command: ./EIFGENs/simple_sorter_tests/F_code/simple_sorter.exe
+Status: 1/1 PASS (ECF test target has placeholder test only)
+Note: Comprehensive tests (37 in test/) not wired to ECF test target

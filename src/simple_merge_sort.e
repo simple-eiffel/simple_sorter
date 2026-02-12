@@ -5,7 +5,7 @@ note
 	revision: "$Revision$"
 
 class
-	SIMPLE_MERGE_SORT [G]
+	SIMPLE_MERGE_SORT [G -> detachable separate ANY]
 
 inherit
 	SIMPLE_SORT_ALGORITHM [G]

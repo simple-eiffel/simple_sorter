@@ -5,7 +5,7 @@ note
 	revision: "$Revision$"
 
 class
-	SIMPLE_SORTER [G]
+	SIMPLE_SORTER [G -> detachable separate ANY]
 
 create
 	make,
@@ -125,26 +125,8 @@ feature -- Status report
 	is_sorted (a_list: LIST [G]; a_key: FUNCTION [G, COMPARABLE]): BOOLEAN
 			-- Is `a_list` sorted by `a_key` in ascending order?
 		require
-		local
-			l_prev_key: detachable COMPARABLE
-			l_curr_key: COMPARABLE
-			i: INTEGER
 		do
-			Result := True
-			from
-				i := 1
-			until
-				i > a_list.count or not Result
-			loop
-				l_curr_key := a_key.item ([a_list.i_th (i)])
-				if attached l_prev_key as l_prev then
-					if l_curr_key < l_prev then
-						Result := False
-					end
-				end
-				l_prev_key := l_curr_key
-				i := i + 1
-			end
+			Result := is_weakly_sorted_by_key (a_list, a_key, False)
 		ensure
 			empty_is_sorted: a_list.is_empty implies Result
 		end
@@ -152,26 +134,8 @@ feature -- Status report
 	is_sorted_descending (a_list: LIST [G]; a_key: FUNCTION [G, COMPARABLE]): BOOLEAN
 			-- Is `a_list` sorted by `a_key` in descending order?
 		require
-		local
-			l_prev_key: detachable COMPARABLE
-			l_curr_key: COMPARABLE
-			i: INTEGER
 		do
-			Result := True
-			from
-				i := 1
-			until
-				i > a_list.count or not Result
-			loop
-				l_curr_key := a_key.item ([a_list.i_th (i)])
-				if attached l_prev_key as l_prev then
-					if l_curr_key > l_prev then
-						Result := False
-					end
-				end
-				l_prev_key := l_curr_key
-				i := i + 1
-			end
+			Result := is_weakly_sorted_by_key (a_list, a_key, True)
 		ensure
 			empty_is_sorted: a_list.is_empty implies Result
 		end
@@ -179,26 +143,8 @@ feature -- Status report
 	is_array_sorted (a_array: ARRAY [G]; a_key: FUNCTION [G, COMPARABLE]): BOOLEAN
 			-- Is `a_array` sorted by `a_key` in ascending order?
 		require
-		local
-			i: INTEGER
-			l_prev_key, l_curr_key: COMPARABLE
 		do
-			Result := True
-			if a_array.count > 1 then
-				l_prev_key := a_key.item ([a_array [a_array.lower]])
-				from
-					i := a_array.lower + 1
-				until
-					i > a_array.upper or not Result
-				loop
-					l_curr_key := a_key.item ([a_array [i]])
-					if l_curr_key < l_prev_key then
-						Result := False
-					end
-					l_prev_key := l_curr_key
-					i := i + 1
-				end
-			end
+			Result := algorithm.is_sorted (a_array, a_key, False)
 		ensure
 			empty_is_sorted: a_array.is_empty implies Result
 		end
@@ -339,6 +285,7 @@ feature -- Basic operations
 		do
 			algorithm.sort (a_array, a_key, True)
 		ensure
+			sorted: algorithm.is_sorted (a_array, a_key, True)
 			count_unchanged: a_array.count = old a_array.count
 		end
 
@@ -457,6 +404,7 @@ feature -- Algorithm access
 		do
 			Result := internal_introsort
 		ensure
+			result_is_introsort: Result = internal_introsort
 		end
 
 	merge_sort: SIMPLE_MERGE_SORT [G]
@@ -464,6 +412,7 @@ feature -- Algorithm access
 		do
 			Result := internal_merge_sort
 		ensure
+			result_is_merge_sort: Result = internal_merge_sort
 		end
 
 	heap_sort: SIMPLE_HEAP_SORT [G]
@@ -471,6 +420,7 @@ feature -- Algorithm access
 		do
 			Result := internal_heap_sort
 		ensure
+			result_is_heap_sort: Result = internal_heap_sort
 		end
 
 	insertion_sort: SIMPLE_INSERTION_SORT [G]
@@ -478,6 +428,7 @@ feature -- Algorithm access
 		do
 			Result := internal_insertion_sort
 		ensure
+			result_is_insertion_sort: Result = internal_insertion_sort
 		end
 
 feature {NONE} -- Implementation
@@ -538,37 +489,84 @@ feature {NONE} -- Implementation
 		end
 
 	comparator_sort (a_array: ARRAY [G]; a_comparator: FUNCTION [G, G, INTEGER])
-			-- Sort `a_array` using custom comparator (stable insertion sort).
+			-- Sort `a_array` using custom comparator (stable merge sort, O(n log n)).
 		require
 		local
-			i, j: INTEGER
-			l_current: G
-			l_done: BOOLEAN
+			l_temp: ARRAY [G]
 		do
-			from
-				i := a_array.lower + 1
-			until
-				i > a_array.upper
-			loop
-				l_current := a_array [i]
-				j := i - 1
-				l_done := False
-				from
-				until
-					j < a_array.lower or l_done
-				loop
-					if a_comparator.item ([a_array [j], l_current]) > 0 then
-						a_array [j + 1] := a_array [j]
-						j := j - 1
-					else
-						l_done := True
-					end
-				end
-				a_array [j + 1] := l_current
-				i := i + 1
+			if a_array.count > 1 then
+				create l_temp.make_filled (a_array [a_array.lower], a_array.lower, a_array.upper)
+				comparator_merge_sort_range (a_array, l_temp, a_array.lower, a_array.upper, a_comparator)
 			end
 		ensure
 			count_unchanged: a_array.count = old a_array.count
+		end
+
+	comparator_merge_sort_range (a_array, a_temp: ARRAY [G]; a_left, a_right: INTEGER; a_comparator: FUNCTION [G, G, INTEGER])
+			-- Recursively sort range [a_left, a_right] using comparator-based merge sort.
+		require
+			left_valid: a_array.valid_index (a_left)
+			right_valid: a_array.valid_index (a_right)
+		local
+			l_mid: INTEGER
+		do
+			if a_left < a_right then
+				l_mid := a_left + (a_right - a_left) // 2
+				comparator_merge_sort_range (a_array, a_temp, a_left, l_mid, a_comparator)
+				comparator_merge_sort_range (a_array, a_temp, l_mid + 1, a_right, a_comparator)
+				comparator_merge (a_array, a_temp, a_left, l_mid, a_right, a_comparator)
+			end
+		end
+
+	comparator_merge (a_array, a_temp: ARRAY [G]; a_left, a_mid, a_right: INTEGER; a_comparator: FUNCTION [G, G, INTEGER])
+			-- Merge two sorted halves using comparator.
+		require
+			bounds_valid: a_left <= a_mid and a_mid < a_right
+			left_valid: a_array.valid_index (a_left)
+			right_valid: a_array.valid_index (a_right)
+		local
+			i, j, k: INTEGER
+		do
+			from
+				i := a_left
+			until
+				i > a_right
+			loop
+				a_temp [i] := a_array [i]
+				i := i + 1
+			end
+			i := a_left
+			j := a_mid + 1
+			k := a_left
+			from
+			until
+				i > a_mid or j > a_right
+			loop
+				if a_comparator.item ([a_temp [i], a_temp [j]]) <= 0 then
+					a_array [k] := a_temp [i]
+					i := i + 1
+				else
+					a_array [k] := a_temp [j]
+					j := j + 1
+				end
+				k := k + 1
+			end
+			from
+			until
+				i > a_mid
+			loop
+				a_array [k] := a_temp [i]
+				i := i + 1
+				k := k + 1
+			end
+			from
+			until
+				j > a_right
+			loop
+				a_array [k] := a_temp [j]
+				j := j + 1
+				k := k + 1
+			end
 		end
 
 	compare_by_keys (a_first, a_second: G; a_keys: ARRAY [FUNCTION [G, COMPARABLE]]; a_descending: ARRAY [BOOLEAN]): INTEGER
